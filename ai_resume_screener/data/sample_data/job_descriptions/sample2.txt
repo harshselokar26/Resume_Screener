@@ -1,0 +1,115 @@
+Senior Data Scientist - Machine Learning
+Company: AI Dynamics Corp
+Location: Seattle, WA (Remote-friendly)
+Experience Level: 4-7 years
+Salary Range: $130,000 - $170,000
+
+ABOUT THE ROLE
+Join our Data Science team to build and deploy machine learning models that power our AI-driven products. You'll work on challenging problems involving large-scale data processing, predictive modeling, and real-time inference systems. This role offers the opportunity to work with state-of-the-art ML technologies and contribute to products used by millions of customers.
+
+KEY RESPONSIBILITIES
+• Design and implement machine learning models for various business applications
+• Develop end-to-end ML pipelines from data ingestion to model deployment
+• Conduct statistical analysis and A/B testing to measure model performance
+• Collaborate with engineering teams to productionize ML models at scale
+• Perform exploratory data analysis to identify patterns and insights
+• Build automated model monitoring and retraining systems
+• Present findings and recommendations to stakeholders and leadership
+• Mentor junior data scientists and contribute to team best practices
+• Stay current with latest ML research and industry trends
+
+REQUIRED SKILLS AND EXPERIENCE
+• Advanced degree (MS/PhD) in Data Science, Computer Science, Statistics, or related field
+• 4+ years of hands-on experience in machine learning and data science
+• Strong programming skills in Python and/or R
+• Proficiency with ML libraries: Scikit-learn, TensorFlow, PyTorch, XGBoost
+• Experience with data manipulation tools: Pandas, NumPy, SQL
+• Knowledge of statistical methods and experimental design
+• Experience with big data technologies: Spark, Hadoop, Kafka
+• Familiarity with cloud platforms: AWS, GCP, or Azure
+• Experience with MLOps tools and practices
+• Strong analytical and problem-solving skills
+• Excellent communication skills for technical and non-technical audiences
+
+PREFERRED QUALIFICATIONS
+• PhD in Machine Learning, Statistics, or related quantitative field
+• Experience with deep learning and neural networks
+• Knowledge of natural language processing (NLP) techniques
+• Experience with computer vision and image processing
+• Familiarity with reinforcement learning algorithms
+• Experience with real-time ML inference systems
+• Knowledge of distributed computing frameworks
+• Experience with data visualization tools (Tableau, Power BI, D3.js)
+• Publications in top-tier ML conferences or journals
+• Experience in specific domains: recommendation systems, fraud detection, or forecasting
+
+TECHNICAL REQUIREMENTS
+Programming Languages: Python (required), R, Scala, Java
+ML Frameworks: TensorFlow, PyTorch, Scikit-learn, Keras, XGBoost, LightGBM
+Data Processing: Apache Spark, Pandas, NumPy, Dask
+Databases: PostgreSQL, MongoDB, Snowflake, BigQuery, Redshift
+Cloud Platforms: AWS (SageMaker, S3, EC2), Google Cloud (Vertex AI, BigQuery), Azure
+MLOps: MLflow, Kubeflow, Airflow, Docker, Kubernetes
+Visualization: Matplotlib, Seaborn, Plotly, Tableau
+Version Control: Git, DVC (Data Version Control)
+
+WHAT YOU'LL WORK ON
+• Customer recommendation engine serving 50M+ users
+• Fraud detection system processing millions of transactions daily
+• Demand forecasting models for supply chain optimization
+• Natural language processing for customer support automation
+• Computer vision models for content moderation
+• Real-time personalization algorithms
+• Predictive maintenance for IoT devices
+
+GROWTH OPPORTUNITIES
+• Lead cross-functional ML projects with significant business impact
+• Opportunity to publish research and speak at industry conferences
+• Mentorship from world-class ML practitioners and researchers
+• Access to cutting-edge computing resources and datasets
+• Career progression to Staff Data Scientist or ML Engineering Manager roles
+• Collaboration with top universities and research institutions
+
+BENEFITS AND PERKS
+• Competitive base salary plus annual bonus
+• Equity participation in fast-growing company
+• Comprehensive health, dental, and vision coverage
+• $4,000 annual learning and development budget
+• Conference attendance and training opportunities
+• Flexible work arrangements (remote/hybrid options)
+• Top-tier equipment: MacBook Pro, external monitors, ergonomic setup
+• Unlimited PTO and sabbatical program
+• Catered meals and premium coffee
+• Gym membership reimbursement
+• Mental health and wellness programs
+
+COMPANY CULTURE
+AI Dynamics Corp is at the forefront of artificial intelligence innovation. We believe in:
+• Data-driven decision making
+• Continuous learning and experimentation
+• Collaboration and knowledge sharing
+• Diversity, equity, and inclusion
+• Work-life balance and employee wellbeing
+• Open source contributions and community involvement
+
+INTERVIEW PROCESS
+1. Application review and initial screening
+2. Technical phone interview (1 hour) - ML concepts and coding
+3. Take-home data science challenge (3-4 hours)
+4. Virtual onsite interviews (4 hours total):
+   - Technical deep dive on take-home project
+   - Machine learning system design
+   - Statistical analysis and A/B testing
+   - Behavioral and culture fit interview
+5. Reference checks and offer
+
+We encourage applications from candidates of all backgrounds. We are committed to creating an inclusive environment where everyone can thrive and contribute their unique perspectives to our mission.
+
+TO APPLY
+Please submit:
+• Updated resume highlighting relevant experience
+• Cover letter explaining your interest in the role
+• Links to portfolio, GitHub, or published work
+• Optional: Kaggle profile or competition results
+
+We review applications continuously and aim to respond within 5 business days.

@@ -1,0 +1,210 @@
+{
+  "job_categories": [
+    {
+      "category": "Software Development",
+      "subcategories": [
+        {
+          "name": "Frontend Development",
+          "roles": [
+            "Frontend Developer", "React Developer", "Angular Developer", 
+            "Vue.js Developer", "UI Developer", "Web Developer"
+          ],
+          "key_skills": ["HTML", "CSS", "JavaScript", "React", "Angular", "Vue.js"],
+          "experience_levels": ["Junior", "Mid-level", "Senior", "Lead"]
+        },
+        {
+          "name": "Backend Development",
+          "roles": [
+            "Backend Developer", "Python Developer", "Java Developer", 
+            "Node.js Developer", "API Developer", "Server-side Developer"
+          ],
+          "key_skills": ["Python", "Java", "Node.js", "REST API", "Databases", "Microservices"],
+          "experience_levels": ["Junior", "Mid-level", "Senior", "Lead"]
+        },
+        {
+          "name": "Full Stack Development",
+          "roles": [
+            "Full Stack Developer", "MEAN Stack Developer", "MERN Stack Developer", 
+            "Django Developer", "Laravel Developer"
+          ],
+          "key_skills": ["Frontend", "Backend", "Databases", "Version Control", "Deployment"],
+          "experience_levels": ["Mid-level", "Senior", "Lead", "Principal"]
+        },
+        {
+          "name": "Mobile Development",
+          "roles": [
+            "Mobile Developer", "iOS Developer", "Android Developer", 
+            "React Native Developer", "Flutter Developer"
+          ],
+          "key_skills": ["Swift", "Kotlin", "React Native", "Flutter", "Mobile UI/UX"],
+          "experience_levels": ["Junior", "Mid-level", "Senior", "Lead"]
+        }
+      ]
+    },
+    {
+      "category": "Data & Analytics",
+      "subcategories": [
+        {
+          "name": "Data Science",
+          "roles": [
+            "Data Scientist", "Machine Learning Engineer", "AI Engineer", 
+            "Research Scientist", "Applied Scientist"
+          ],
+          "key_skills": ["Python", "R", "Machine Learning", "Statistics", "Data Visualization"],
+          "experience_levels": ["Junior", "Mid-level", "Senior", "Principal", "Staff"]
+        },
+        {
+          "name": "Data Engineering",
+          "roles": [
+            "Data Engineer", "Big Data Engineer", "ETL Developer", 
+            "Data Pipeline Engineer", "Analytics Engineer"
+          ],
+          "key_skills": ["SQL", "Python", "Apache Spark", "Hadoop", "Data Warehousing"],
+          "experience_levels": ["Junior", "Mid-level", "Senior", "Lead", "Principal"]
+        },
+        {
+          "name": "Business Intelligence",
+          "roles": [
+            "BI Developer", "Data Analyst", "Business Analyst", 
+            "Reporting Analyst", "Analytics Consultant"
+          ],
+          "key_skills": ["SQL", "Tableau", "Power BI", "Excel", "Data Analysis"],
+          "experience_levels": ["Entry", "Mid-level", "Senior", "Lead"]
+        }
+      ]
+    },
+    {
+      "category": "DevOps & Infrastructure",
+      "subcategories": [
+        {
+          "name": "DevOps Engineering",
+          "roles": [
+            "DevOps Engineer", "Site Reliability Engineer", "Platform Engineer", 
+            "Infrastructure Engineer", "Cloud Engineer"
+          ],
+          "key_skills": ["Docker", "Kubernetes", "CI/CD", "AWS", "Terraform", "Monitoring"],
+          "experience_levels": ["Junior", "Mid-level", "Senior", "Lead", "Principal"]
+        },
+        {
+          "name": "Cloud Architecture",
+          "roles": [
+            "Cloud Architect", "Solutions Architect", "Infrastructure Architect", 
+            "AWS Architect", "Azure Architect"
+          ],
+          "key_skills": ["Cloud Platforms", "Architecture Design", "Security", "Scalability"],
+          "experience_levels": ["Senior", "Lead", "Principal", "Distinguished"]
+        }
+      ]
+    },
+    {
+      "category": "Cybersecurity",
+      "subcategories": [
+        {
+          "name": "Security Engineering",
+          "roles": [
+            "Security Engineer", "Cybersecurity Analyst", "Information Security Specialist", 
+            "Penetration Tester", "Security Architect"
+          ],
+          "key_skills": ["Network Security", "Penetration Testing", "SIEM", "Incident Response"],
+          "experience_levels": ["Junior", "Mid-level", "Senior", "Lead", "Principal"]
+        }
+      ]
+    },
+    {
+      "category": "Product & Design",
+      "subcategories": [
+        {
+          "name": "Product Management",
+          "roles": [
+            "Product Manager", "Senior Product Manager", "Principal Product Manager", 
+            "Product Owner", "Technical Product Manager"
+          ],
+          "key_skills": ["Product Strategy", "User Research", "Agile", "Analytics", "Roadmapping"],
+          "experience_levels": ["Associate", "Mid-level", "Senior", "Principal", "Director"]
+        },
+        {
+          "name": "UX/UI Design",
+          "roles": [
+            "UX Designer", "UI Designer", "Product Designer", 
+            "Interaction Designer", "Visual Designer"
+          ],
+          "key_skills": ["Figma", "Sketch", "Adobe Creative Suite", "User Research", "Prototyping"],
+          "experience_levels": ["Junior", "Mid-level", "Senior", "Lead", "Principal"]
+        }
+      ]
+    },
+    {
+      "category": "Management & Leadership",
+      "subcategories": [
+        {
+          "name": "Engineering Management",
+          "roles": [
+            "Engineering Manager", "Technical Lead", "Team Lead", 
+            "Director of Engineering", "VP of Engineering", "CTO"
+          ],
+          "key_skills": ["Leadership", "Team Management", "Technical Strategy", "Hiring"],
+          "experience_levels": ["Manager", "Senior Manager", "Director", "VP", "C-Level"]
+        }
+      ]
+    }
+  ],
+  "experience_levels": {
+    "Entry": {
+      "years": "0-1",
+      "description": "New graduate or career changer",
+      "typical_responsibilities": ["Learning", "Basic tasks", "Mentorship"]
+    },
+    "Junior": {
+      "years": "1-3",
+      "description": "Early career professional",
+      "typical_responsibilities": ["Feature development", "Bug fixes", "Code reviews"]
+    },
+    "Mid-level": {
+      "years": "3-6",
+      "description": "Experienced individual contributor",
+      "typical_responsibilities": ["Complex features", "Architecture decisions", "Mentoring"]
+    },
+    "Senior": {
+      "years": "6-10",
+      "description": "Senior individual contributor or team lead",
+      "typical_responsibilities": ["System design", "Technical leadership", "Cross-team collaboration"]
+    },
+    "Lead": {
+      "years": "8-12",
+      "description": "Technical leader with team responsibilities",
+      "typical_responsibilities": ["Team leadership", "Architecture", "Strategic planning"]
+    },
+    "Principal": {
+      "years": "10-15",
+      "description": "Senior technical leader across multiple teams",
+      "typical_responsibilities": ["Technical strategy", "Org-wide impact", "Innovation"]
+    },
+    "Distinguished": {
+      "years": "15+",
+      "description": "Industry expert and thought leader",
+      "typical_responsibilities": ["Industry influence", "Technical vision", "External representation"]
+    }
+  },
+  "company_sizes": {
+    "Startup": {
+      "employees": "1-50",
+      "characteristics": ["Fast-paced", "Wear many hats", "Equity compensation", "High growth"]
+    },
+    "Small": {
+      "employees": "51-200",
+      "characteristics": ["Close-knit team", "Direct impact", "Learning opportunities"]
+    },
+    "Medium": {
+      "employees": "201-1000",
+      "characteristics": ["Structured processes", "Career growth", "Specialized roles"]
+    },
+    "Large": {
+      "employees": "1001-10000",
+      "characteristics": ["Established processes", "Resources", "Stability", "Benefits"]
+    },
+    "Enterprise": {
+      "employees": "10000+",
+      "characteristics": ["Complex systems", "Scale challenges", "Comprehensive benefits"]
+    }
+  }
+}

@@ -1,0 +1,80 @@
+Senior Software Engineer - Full Stack
+Company: TechInnovate Inc.
+Location: San Francisco, CA (Hybrid)
+Experience Level: 5-8 years
+Salary Range: $140,000 - $180,000
+
+ABOUT THE ROLE
+We are seeking a talented Senior Software Engineer to join our growing engineering team. You will be responsible for designing, developing, and maintaining scalable web applications that serve millions of users worldwide. This is an excellent opportunity to work with cutting-edge technologies and make a significant impact on our product.
+
+RESPONSIBILITIES
+• Design and develop high-quality, scalable web applications using modern technologies
+• Collaborate with cross-functional teams including product managers, designers, and QA engineers
+• Write clean, maintainable, and well-documented code
+• Participate in code reviews and provide constructive feedback to team members
+• Mentor junior developers and contribute to team knowledge sharing
+• Optimize application performance and ensure high availability
+• Implement automated testing and CI/CD pipelines
+• Stay up-to-date with latest technology trends and best practices
+• Participate in agile development processes and sprint planning
+
+REQUIRED QUALIFICATIONS
+• Bachelor's degree in Computer Science, Engineering, or related field
+• 5+ years of professional software development experience
+• Strong proficiency in JavaScript, TypeScript, and modern frontend frameworks (React, Angular, or Vue.js)
+• Experience with backend technologies (Node.js, Python, Java, or similar)
+• Solid understanding of RESTful APIs and microservices architecture
+• Experience with relational and NoSQL databases (PostgreSQL, MongoDB, Redis)
+• Proficiency with version control systems (Git) and collaborative development workflows
+• Experience with cloud platforms (AWS, Azure, or GCP)
+• Knowledge of containerization technologies (Docker, Kubernetes)
+• Understanding of CI/CD pipelines and DevOps practices
+• Strong problem-solving skills and attention to detail
+• Excellent communication and teamwork abilities
+
+PREFERRED QUALIFICATIONS
+• Master's degree in Computer Science or related field
+• Experience with GraphQL and modern API design patterns
+• Knowledge of machine learning and AI technologies
+• Experience with mobile development (React Native, Flutter)
+• Familiarity with data visualization libraries and tools
+• Experience with performance optimization and monitoring tools
+• Knowledge of security best practices and OWASP guidelines
+• Experience with agile methodologies (Scrum, Kanban)
+• Open source contributions and active GitHub profile
+• AWS or other cloud platform certifications
+
+TECHNICAL STACK
+Frontend: React, TypeScript, Next.js, Tailwind CSS
+Backend: Node.js, Express.js, Python, Django
+Databases: PostgreSQL, MongoDB, Redis
+Cloud: AWS (EC2, S3, RDS, Lambda)
+DevOps: Docker, Kubernetes, Jenkins, Terraform
+Monitoring: DataDog, New Relic, Sentry
+Testing: Jest, Cypress, Pytest
+
+WHAT WE OFFER
+• Competitive salary and equity package
+• Comprehensive health, dental, and vision insurance
+• 401(k) with company matching
+• Flexible work arrangements (hybrid/remote options)
+• Professional development budget ($3,000 annually)
+• Unlimited PTO policy
+• State-of-the-art equipment and tools
+• Catered meals and snacks
+• Team building events and company retreats
+• Opportunity to work on cutting-edge projects
+• Collaborative and inclusive work environment
+
+ABOUT THE COMPANY
+TechInnovate Inc. is a fast-growing technology company focused on building innovative solutions that transform how businesses operate. We serve over 10 million users globally and are backed by top-tier investors. Our team of 200+ employees is passionate about creating products that make a real difference in people's lives.
+
+APPLICATION PROCESS
+Please submit your resume, cover letter, and links to your portfolio or GitHub profile. We review applications on a rolling basis and aim to respond within one week. The interview process includes:
+1. Initial phone screening (30 minutes)
+2. Technical coding challenge (take-home)
+3. Technical interview with engineering team (1 hour)
+4. System design interview (1 hour)
+5. Cultural fit interview with hiring manager (45 minutes)
+
+We are an equal opportunity employer committed to diversity and inclusion. We welcome applications from candidates of all backgrounds and experiences.

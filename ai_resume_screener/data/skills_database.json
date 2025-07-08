@@ -1,0 +1,189 @@
+{
+  "technical_skills": [
+    {
+      "category": "Programming Languages",
+      "skills": [
+        "Python", "Java", "JavaScript", "TypeScript", "C++", "C#", "Go", "Rust", 
+        "Ruby", "PHP", "Swift", "Kotlin", "Scala", "R", "MATLAB", "SQL", "HTML", 
+        "CSS", "Dart", "Perl", "Shell Scripting", "PowerShell", "VBA", "Assembly"
+      ]
+    },
+    {
+      "category": "Web Frameworks",
+      "skills": [
+        "React", "Angular", "Vue.js", "Node.js", "Express.js", "Django", "Flask", 
+        "FastAPI", "Spring Boot", "Laravel", "Ruby on Rails", "ASP.NET", "jQuery", 
+        "Bootstrap", "Tailwind CSS", "Next.js", "Nuxt.js", "Svelte", "Ember.js"
+      ]
+    },
+    {
+      "category": "Mobile Development",
+      "skills": [
+        "React Native", "Flutter", "iOS Development", "Android Development", 
+        "Xamarin", "Ionic", "PhoneGap", "Cordova", "Swift UI", "Kotlin Multiplatform"
+      ]
+    },
+    {
+      "category": "Databases",
+      "skills": [
+        "MySQL", "PostgreSQL", "MongoDB", "Redis", "SQLite", "Oracle", "SQL Server", 
+        "Elasticsearch", "Cassandra", "DynamoDB", "Neo4j", "InfluxDB", "CouchDB", 
+        "Firebase", "Supabase", "MariaDB", "Amazon RDS", "Google Cloud SQL"
+      ]
+    },
+    {
+      "category": "Cloud Platforms",
+      "skills": [
+        "AWS", "Azure", "Google Cloud Platform", "IBM Cloud", "Oracle Cloud", 
+        "DigitalOcean", "Heroku", "Vercel", "Netlify", "Railway", "Render"
+      ]
+    },
+    {
+      "category": "DevOps & Tools",
+      "skills": [
+        "Docker", "Kubernetes", "Jenkins", "Git", "GitHub", "GitLab", "CI/CD", 
+        "Terraform", "Ansible", "Chef", "Puppet", "Vagrant", "Apache", "Nginx", 
+        "Linux", "Windows Server", "Bash", "Zsh", "Vim", "VS Code", "IntelliJ"
+      ]
+    },
+    {
+      "category": "Data Science & ML",
+      "skills": [
+        "Machine Learning", "Deep Learning", "TensorFlow", "PyTorch", "Scikit-learn", 
+        "Pandas", "NumPy", "Matplotlib", "Seaborn", "Jupyter", "Apache Spark", 
+        "Hadoop", "Kafka", "Airflow", "MLflow", "Kubeflow", "OpenCV", "NLTK", 
+        "spaCy", "Hugging Face", "Computer Vision", "Natural Language Processing"
+      ]
+    },
+    {
+      "category": "Testing",
+      "skills": [
+        "Unit Testing", "Integration Testing", "Jest", "Pytest", "JUnit", "Selenium", 
+        "Cypress", "Postman", "TestNG", "Mocha", "Chai", "Jasmine", "PHPUnit"
+      ]
+    },
+    {
+      "category": "Architecture & Design",
+      "skills": [
+        "Microservices", "REST API", "GraphQL", "gRPC", "Event-Driven Architecture", 
+        "Domain-Driven Design", "SOLID Principles", "Design Patterns", "System Design", 
+        "Distributed Systems", "Load Balancing", "Caching", "Message Queues"
+      ]
+    },
+    {
+      "category": "Security",
+      "skills": [
+        "OAuth", "JWT", "SSL/TLS", "Encryption", "Penetration Testing", "OWASP", 
+        "Cybersecurity", "Network Security", "Application Security", "GDPR", "HIPAA"
+      ]
+    }
+  ],
+  "soft_skills": [
+    {
+      "category": "Communication",
+      "skills": [
+        "Verbal Communication", "Written Communication", "Presentation Skills", 
+        "Public Speaking", "Technical Writing", "Documentation", "Cross-cultural Communication"
+      ]
+    },
+    {
+      "category": "Leadership",
+      "skills": [
+        "Team Leadership", "Project Management", "Mentoring", "Coaching", "Delegation", 
+        "Strategic Planning", "Decision Making", "Conflict Resolution", "Change Management"
+      ]
+    },
+    {
+      "category": "Collaboration",
+      "skills": [
+        "Teamwork", "Cross-functional Collaboration", "Stakeholder Management", 
+        "Customer Service", "Negotiation", "Networking", "Relationship Building"
+      ]
+    },
+    {
+      "category": "Problem Solving",
+      "skills": [
+        "Critical Thinking", "Analytical Skills", "Creative Problem Solving", 
+        "Troubleshooting", "Root Cause Analysis", "Innovation", "Research Skills"
+      ]
+    },
+    {
+      "category": "Personal Management",
+      "skills": [
+        "Time Management", "Organization", "Attention to Detail", "Multitasking", 
+        "Prioritization", "Self-motivation", "Adaptability", "Flexibility", 
+        "Stress Management", "Work-life Balance"
+      ]
+    },
+    {
+      "category": "Learning & Development",
+      "skills": [
+        "Continuous Learning", "Curiosity", "Growth Mindset", "Knowledge Sharing", 
+        "Training", "Self-directed Learning", "Industry Awareness"
+      ]
+    }
+  ],
+  "certifications": [
+    {
+      "category": "Cloud Certifications",
+      "certifications": [
+        "AWS Certified Solutions Architect", "AWS Certified Developer", 
+        "AWS Certified SysOps Administrator", "Azure Fundamentals", 
+        "Azure Solutions Architect", "Google Cloud Professional", 
+        "Google Cloud Associate", "IBM Cloud Certified"
+      ]
+    },
+    {
+      "category": "Project Management",
+      "certifications": [
+        "PMP", "Scrum Master", "Agile Certified Practitioner", "PRINCE2", 
+        "Certified ScrumMaster", "SAFe Agilist", "Kanban Management Professional"
+      ]
+    },
+    {
+      "category": "Security",
+      "certifications": [
+        "CISSP", "CompTIA Security+", "CEH", "CISM", "CISA", "GSEC", "OSCP"
+      ]
+    },
+    {
+      "category": "Technology",
+      "certifications": [
+        "Cisco Certified", "Microsoft Certified", "Oracle Certified", 
+        "Red Hat Certified", "VMware Certified", "Salesforce Certified"
+      ]
+    },
+    {
+      "category": "Data & Analytics",
+      "certifications": [
+        "Google Analytics", "Tableau Certified", "Power BI Certified", 
+        "Snowflake Certified", "Databricks Certified"
+      ]
+    }
+  ],
+  "industries": [
+    "Technology", "Healthcare", "Finance", "Education", "Retail", "Manufacturing", 
+    "Automotive", "Aerospace", "Energy", "Telecommunications", "Media", "Gaming", 
+    "E-commerce", "Consulting", "Government", "Non-profit", "Real Estate", 
+    "Transportation", "Hospitality", "Agriculture"
+  ],
+  "skill_synonyms": {
+    "JavaScript": ["JS", "ECMAScript", "ES6", "ES2015"],
+    "Node.js": ["NodeJS", "Node"],
+    "React": ["ReactJS", "React.js"],
+    "Vue.js": ["Vue", "VueJS"],
+    "Angular": ["AngularJS", "Angular2+"],
+    "Python": ["Python3", "Py"],
+    "C++": ["CPP", "C Plus Plus"],
+    "C#": ["C Sharp", "CSharp"],
+    "PostgreSQL": ["Postgres", "PostGres"],
+    "MongoDB": ["Mongo"],
+    "Amazon Web Services": ["AWS"],
+    "Google Cloud Platform": ["GCP", "Google Cloud"],
+    "Microsoft Azure": ["Azure"],
+    "Machine Learning": ["ML"],
+    "Artificial Intelligence": ["AI"],
+    "Natural Language Processing": ["NLP"],
+    "Computer Vision": ["CV"]
+  }
+}

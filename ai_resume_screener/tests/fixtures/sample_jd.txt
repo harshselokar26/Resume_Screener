@@ -1,0 +1,28 @@
+Senior Software Engineer Position
+
+We are looking for an experienced software engineer with:
+- 5+ years of experience in web development
+- Strong skills in React, Node.js, and Python
+- Experience with cloud platforms (AWS preferred)
+- Knowledge of databases (PostgreSQL, MongoDB)
+- Leadership experience preferred
+
+Requirements:
+- Bachelor's degree in Computer Science
+- Experience with agile methodologies
+- Strong communication skills
+- Problem-solving abilities
+- Team collaboration skills
+
+Responsibilities:
+- Design and develop scalable web applications
+- Lead technical projects and mentor junior developers
+- Collaborate with cross-functional teams
+- Implement best practices and coding standards
+- Participate in code reviews and technical discussions
+
+What we offer:
+- Competitive salary and benefits
+- Professional development opportunities
+- Flexible work arrangements
+- Collaborative team environment

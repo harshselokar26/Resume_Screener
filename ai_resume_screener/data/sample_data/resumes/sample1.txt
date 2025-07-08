@@ -1,0 +1,66 @@
+John Smith
+Software Engineer
+Email: john.smith@email.com
+Phone: (555) 123-4567
+LinkedIn: linkedin.com/in/johnsmith
+Location: San Francisco, CA
+
+PROFESSIONAL SUMMARY
+Experienced Full Stack Developer with 5+ years of expertise in building scalable web applications using modern technologies. Proficient in React, Node.js, Python, and cloud platforms. Strong background in agile development methodologies and collaborative team environments.
+
+TECHNICAL SKILLS
+Programming Languages: JavaScript, Python, TypeScript, Java, SQL
+Frontend: React, Vue.js, HTML5, CSS3, Bootstrap, Tailwind CSS
+Backend: Node.js, Express.js, Django, Flask, REST APIs, GraphQL
+Databases: PostgreSQL, MongoDB, Redis, MySQL
+Cloud & DevOps: AWS, Docker, Kubernetes, CI/CD, Jenkins, Git
+Tools: VS Code, Postman, Jira, Slack, Figma
+
+PROFESSIONAL EXPERIENCE
+
+Senior Software Engineer | TechCorp Inc. | 2021 - Present
+• Led development of customer-facing web application serving 100K+ users
+• Implemented microservices architecture reducing system latency by 40%
+• Mentored 3 junior developers and conducted code reviews
+• Collaborated with product managers and designers on feature planning
+• Technologies: React, Node.js, PostgreSQL, AWS, Docker
+
+Software Engineer | StartupXYZ | 2019 - 2021
+• Developed and maintained e-commerce platform using React and Django
+• Built RESTful APIs handling 10K+ daily transactions
+• Implemented automated testing reducing bug reports by 60%
+• Participated in agile sprints and daily standups
+• Technologies: React, Django, PostgreSQL, Redis, Heroku
+
+Junior Developer | WebSolutions LLC | 2018 - 2019
+• Created responsive websites for small to medium businesses
+• Learned modern web development practices and frameworks
+• Collaborated with senior developers on complex projects
+• Technologies: HTML, CSS, JavaScript, PHP, MySQL
+
+EDUCATION
+Bachelor of Science in Computer Science
+University of California, Berkeley | 2014 - 2018
+GPA: 3.7/4.0
+
+CERTIFICATIONS
+• AWS Certified Solutions Architect - Associate (2022)
+• Certified Scrum Master (2021)
+
+PROJECTS
+E-Commerce Platform (Personal Project)
+• Built full-stack e-commerce application with React and Node.js
+• Implemented user authentication, payment processing, and inventory management
+• Deployed on AWS with CI/CD pipeline
+• GitHub: github.com/johnsmith/ecommerce-app
+
+Task Management App (Team Project)
+• Developed collaborative task management tool for remote teams
+• Used React, Express.js, and MongoDB
+• Implemented real-time updates using WebSockets
+
+ACHIEVEMENTS
+• Increased application performance by 40% through optimization
+• Led successful migration to microservices architecture
+• Mentored 5+ junior developers throughout career
+• Contributed to open-source projects with 500+ GitHub stars

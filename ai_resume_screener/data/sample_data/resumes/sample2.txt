@@ -1,0 +1,86 @@
+Sarah Johnson
+Data Scientist
+Email: sarah.johnson@email.com
+Phone: (555) 987-6543
+LinkedIn: linkedin.com/in/sarahjohnson
+Location: New York, NY
+
+PROFESSIONAL SUMMARY
+Results-driven Data Scientist with 4+ years of experience in machine learning, statistical analysis, and data visualization. Expertise in Python, R, and SQL with a strong background in developing predictive models and extracting actionable insights from complex datasets. Proven track record of driving business decisions through data-driven solutions.
+
+TECHNICAL SKILLS
+Programming: Python, R, SQL, Scala, Java
+Machine Learning: Scikit-learn, TensorFlow, PyTorch, Keras, XGBoost
+Data Analysis: Pandas, NumPy, SciPy, Statsmodels
+Visualization: Matplotlib, Seaborn, Plotly, Tableau, Power BI
+Big Data: Apache Spark, Hadoop, Kafka, Airflow
+Cloud: AWS (S3, EC2, SageMaker), Google Cloud Platform, Azure
+Databases: PostgreSQL, MySQL, MongoDB, Snowflake, BigQuery
+Tools: Jupyter, Git, Docker, MLflow, Kubernetes
+
+PROFESSIONAL EXPERIENCE
+
+Senior Data Scientist | DataTech Solutions | 2022 - Present
+• Developed machine learning models for customer churn prediction with 85% accuracy
+• Built recommendation system increasing user engagement by 25%
+• Led data science team of 4 members on multiple projects
+• Implemented MLOps pipeline reducing model deployment time by 50%
+• Collaborated with engineering teams to productionize ML models
+• Technologies: Python, TensorFlow, AWS SageMaker, Docker, Kubernetes
+
+Data Scientist | Analytics Corp | 2020 - 2022
+• Created predictive models for demand forecasting saving $2M annually
+• Performed A/B testing and statistical analysis for product features
+• Built automated reporting dashboards using Tableau and Python
+• Conducted exploratory data analysis on large datasets (10M+ records)
+• Presented findings to C-level executives and stakeholders
+• Technologies: Python, R, Scikit-learn, Tableau, PostgreSQL, AWS
+
+Junior Data Analyst | InsightsCo | 2019 - 2020
+• Analyzed customer behavior data to identify trends and patterns
+• Created data visualizations and reports for marketing team
+• Cleaned and preprocessed data from multiple sources
+• Assisted in building predictive models for sales forecasting
+• Technologies: Python, SQL, Excel, Tableau, MySQL
+
+EDUCATION
+Master of Science in Data Science
+Columbia University | 2017 - 2019
+Thesis: "Deep Learning Approaches for Natural Language Processing"
+GPA: 3.8/4.0
+
+Bachelor of Science in Statistics
+University of Michigan | 2013 - 2017
+Minor: Computer Science
+GPA: 3.6/4.0
+
+CERTIFICATIONS
+• AWS Certified Machine Learning - Specialty (2023)
+• Google Cloud Professional Data Engineer (2022)
+• Tableau Desktop Certified Associate (2021)
+
+PROJECTS
+Customer Segmentation Analysis
+• Performed clustering analysis on customer data using K-means and hierarchical clustering
+• Identified 5 distinct customer segments leading to targeted marketing campaigns
+• Increased conversion rates by 30% through personalized recommendations
+
+Stock Price Prediction Model
+• Built LSTM neural network for predicting stock prices
+• Achieved 78% accuracy on test data
+• Implemented using TensorFlow and deployed on AWS
+
+Sentiment Analysis Tool
+• Developed NLP model for analyzing customer reviews
+• Used BERT and transformer models for text classification
+• Deployed as REST API using Flask and Docker
+
+PUBLICATIONS
+• "Machine Learning Applications in Customer Analytics" - Data Science Journal (2023)
+• "Predictive Modeling for E-commerce" - Conference on Data Mining (2022)
+
+ACHIEVEMENTS
+• Reduced customer churn by 20% through predictive modeling
+• Saved company $2M through demand forecasting optimization
+• Led successful migration of ML models to cloud infrastructure
+• Mentored 3 junior data scientists

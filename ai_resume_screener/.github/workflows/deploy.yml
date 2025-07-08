@@ -1,0 +1,344 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+        - staging
+        - production
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # ===== BUILD AND PUSH DOCKER IMAGE =====
+  build-and-push:
+    name: Build and Push Docker Image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      
+    outputs:
+      image-tag: ${{ steps.meta.outputs.tags }}
+      image-digest: ${{ steps.build.outputs.digest }}
+      
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      
+    - name: Log in to Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=semver,pattern={{version}}
+          type=semver,pattern={{major}}.{{minor}}
+          type=sha,prefix={{branch}}-
+          type=raw,value=latest,enable={{is_default_branch}}
+          
+    - name: Build and push Docker image
+      id: build
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        platforms: linux/amd64,linux/arm64
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        
+    - name: Generate SBOM
+      uses: anchore/sbom-action@v0
+      with:
+        image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+        format: spdx-json
+        output-file: sbom.spdx.json
+        
+    - name: Upload SBOM
+      uses: actions/upload-artifact@v3
+      with:
+        name: sbom
+        path: sbom.spdx.json
+
+  # ===== SECURITY SCANNING =====
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    permissions:
+      security-events: write
+      
+    steps:
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: ${{ needs.build-and-push.outputs.image-tag }}
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+        
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v2
+      if: always()
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+  # ===== DEPLOY TO STAGING =====
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [build-and-push, security-scan]
+    environment: staging
+    if: github.ref == 'refs/heads/main' || github.event.inputs.environment == 'staging'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
+        
+    - name: Deploy to ECS Staging
+      run: |
+        # Update ECS service with new image
+        aws ecs update-service \
+          --cluster ai-resume-screener-staging \
+          --service ai-resume-screener-staging \
+          --force-new-deployment \
+          --task-definition ai-resume-screener-staging:$(aws ecs describe-task-definition \
+            --task-definition ai-resume-screener-staging \
+            --query 'taskDefinition.revision')
+            
+    - name: Wait for deployment to complete
+      run: |
+        aws ecs wait services-stable \
+          --cluster ai-resume-screener-staging \
+          --services ai-resume-screener-staging
+          
+    - name: Run smoke tests
+      run: |
+        # Wait for service to be healthy
+        sleep 30
+        
+        # Get service URL
+        SERVICE_URL="${{ secrets.STAGING_URL }}"
+        
+        # Health check
+        curl -f "$SERVICE_URL/health" || exit 1
+        
+        # Basic API test
+        curl -f "$SERVICE_URL/api/health" || exit 1
+        
+        echo "✅ Staging deployment successful!"
+
+  # ===== DEPLOY TO PRODUCTION =====
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [build-and-push, security-scan, deploy-staging]
+    environment: production
+    if: startsWith(github.ref, 'refs/tags/v') || github.event.inputs.environment == 'production'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
+        
+    - name: Create deployment backup
+      run: |
+        # Backup current task definition
+        aws ecs describe-task-definition \
+          --task-definition ai-resume-screener-production \
+          --query 'taskDefinition' > backup-task-definition.json
+          
+    - name: Deploy to ECS Production
+      run: |
+        # Update task definition with new image
+        NEW_IMAGE="${{ needs.build-and-push.outputs.image-tag }}"
+        
+        # Get current task definition
+        TASK_DEFINITION=$(aws ecs describe-task-definition \
+          --task-definition ai-resume-screener-production \
+          --query 'taskDefinition')
+          
+        # Update image in task definition
+        echo $TASK_DEFINITION | jq \
+          --arg IMAGE "$NEW_IMAGE" \
+          '.containerDefinitions[0].image = $IMAGE' | \
+          jq 'del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .placementConstraints, .compatibilities, .registeredAt, .registeredBy)' \
+          > new-task-definition.json
+          
+        # Register new task definition
+        aws ecs register-task-definition \
+          --cli-input-json file://new-task-definition.json
+          
+        # Update service
+        aws ecs update-service \
+          --cluster ai-resume-screener-production \
+          --service ai-resume-screener-production \
+          --task-definition ai-resume-screener-production
+          
+    - name: Wait for deployment to complete
+      run: |
+        aws ecs wait services-stable \
+          --cluster ai-resume-screener-production \
+          --services ai-resume-screener-production
+          
+    - name: Run production smoke tests
+      run: |
+        # Wait for service to be healthy
+        sleep 60
+        
+        # Get service URL
+        SERVICE_URL="${{ secrets.PRODUCTION_URL }}"
+        
+        # Health check
+        curl -f "$SERVICE_URL/health" || exit 1
+        
+        # Basic API test
+        curl -f "$SERVICE_URL/api/health" || exit 1
+        
+        echo "✅ Production deployment successful!"
+        
+    - name: Create GitHub release
+      if: startsWith(github.ref, 'refs/tags/v')
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        draft: false
+        prerelease: false
+        body: |
+          ## Changes in this Release
+          
+          - Deployed to production
+          - Image: ${{ needs.build-and-push.outputs.image-tag }}
+          - Commit: ${{ github.sha }}
+          
+          ## Deployment Details
+          
+          - Environment: Production
+          - Deployed at: ${{ github.event.head_commit.timestamp }}
+          - Deployed by: ${{ github.actor }}
+
+  # ===== ROLLBACK CAPABILITY =====
+  rollback:
+    name: Rollback Deployment
+    runs-on: ubuntu-latest
+    environment: production
+    if: failure() && (startsWith(github.ref, 'refs/tags/v') || github.event.inputs.environment == 'production')
+    needs: [deploy-production]
+    
+    steps:
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
+        
+    - name: Rollback to previous version
+      run: |
+        # Get previous task definition revision
+        PREVIOUS_REVISION=$(aws ecs list-task-definitions \
+          --family-prefix ai-resume-screener-production \
+          --status ACTIVE \
+          --sort DESC \
+          --query 'taskDefinitionArns[1]' \
+          --output text)
+          
+        if [ "$PREVIOUS_REVISION" != "None" ]; then
+          # Update service to previous revision
+          aws ecs update-service \
+            --cluster ai-resume-screener-production \
+            --service ai-resume-screener-production \
+            --task-definition $PREVIOUS_REVISION
+            
+          # Wait for rollback to complete
+          aws ecs wait services-stable \
+            --cluster ai-resume-screener-production \
+            --services ai-resume-screener-production
+            
+          echo "✅ Rollback completed successfully!"
+        else
+          echo "❌ No previous version found for rollback"
+          exit 1
+        fi
+
+  # ===== NOTIFICATION =====
+  notify:
+    name: Send Notifications
+    runs-on: ubuntu-latest
+    needs: [deploy-staging, deploy-production]
+    if: always()
+    
+    steps:
+    - name: Send Slack notification
+      uses: 8398a7/action-slack@v3
+      with:
+        status: ${{ job.status }}
+        channel: '#deployments'
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+        fields: repo,message,commit,author,action,eventName,ref,workflow
+        text: |
+          Deployment Status: ${{ job.status }}
+          Environment: ${{ github.event.inputs.environment || 'staging' }}
+          Commit: ${{ github.sha }}
+          Author: ${{ github.actor }}
+          
+    - name: Send email notification
+      if: failure()
+      uses: dawidd6/action-send-mail@v3
+      with:
+        server_address: smtp.gmail.com
+        server_port: 587
+        username: ${{ secrets.EMAIL_USERNAME }}
+        password: ${{ secrets.EMAIL_PASSWORD }}
+        subject: "🚨 Deployment Failed - AI Resume Screener"
+        to: ${{ secrets.NOTIFICATION_EMAIL }}
+        from: "GitHub Actions <noreply@github.com>"
+        body: |
+          Deployment failed for AI Resume Screener
+          
+          Repository: ${{ github.repository }}
+          Branch: ${{ github.ref }}
+          Commit: ${{ github.sha }}
+          Author: ${{ github.actor }}
+          Workflow: ${{ github.workflow }}
+          
+          Please check the GitHub Actions logs for more details.

@@ -1,0 +1,109 @@
+# =============================================================================
+# AI Resume Screener - Development Dependencies
+# =============================================================================
+# Additional dependencies for development environment
+# =============================================================================
+
+# Include base dependencies
+-r base.txt
+
+# Testing Framework
+pytest==7.4.3
+pytest-asyncio==0.21.1
+pytest-cov==4.1.0
+pytest-mock==3.12.0
+pytest-xdist==3.5.0
+pytest-html==4.1.1
+pytest-benchmark==4.0.0
+
+# HTTP Testing
+pytest-httpx==0.27.0
+httpx==0.25.2
+
+# Test Data Generation
+factory-boy==3.3.0
+faker==20.1.0
+
+# Code Quality and Formatting
+black==23.11.0
+isort==5.12.0
+flake8==6.1.0
+flake8-docstrings==1.7.0
+flake8-import-order==0.18.2
+flake8-bugbear==23.11.28
+
+# Type Checking
+mypy==1.7.1
+types-python-dateutil==2.8.19.14
+types-redis==4.6.0.11
+types-requests==2.31.0.10
+
+# Security and Vulnerability Scanning
+bandit==1.7.5
+safety==2.3.5
+
+# Documentation
+sphinx==7.2.6
+sphinx-rtd-theme==1.3.0
+sphinx-autodoc-typehints==1.25.2
+
+# Pre-commit Hooks
+pre-commit==3.5.0
+
+# Development Tools
+ipython==8.17.2
+ipdb==0.13.13
+
+# Performance Profiling
+py-spy==0.3.14
+memory-profiler==0.61.0
+line-profiler==4.1.1
+
+# Load Testing
+locust==2.17.0
+
+# Database Tools
+sqlalchemy-utils==0.41.1
+
+# Debugging and Development Server
+watchfiles==0.21.0
+python-multipart==0.0.6
+
+# Environment Management
+python-decouple==3.8
+
+# API Documentation
+mkdocs==1.5.3
+mkdocs-material==9.4.8
+mkdocs-swagger-ui-tag==0.6.8
+
+# Code Coverage
+coverage[toml]==7.3.2
+
+# Linting and Code Analysis
+pylint==3.0.3
+autopep8==2.0.4
+
+# Git Hooks and Workflow
+gitpython==3.1.40
+
+# Development Utilities
+tqdm==4.66.1
+colorama==0.4.6
+
+# Jupyter Notebook Support (Optional)
+jupyter==1.0.0
+notebook==7.0.6
+
+# Database Migrations
+alembic==1.13.1
+
+# Mock and Stub Generation
+responses==0.24.1
+freezegun==1.2.2
+
+# Performance Monitoring
+psutil==5.9.6
+
+# Development Server Enhancements
+python-multipart==0.0.6
