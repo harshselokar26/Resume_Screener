@@ -4,108 +4,61 @@ services:
   # ===== DEVELOPMENT APPLICATION =====
   app:
     build:
+      context: .
+      dockerfile: Dockerfile.dev
       target: development
-      args:
-        BUILD_DATE: ${BUILD_DATE:-}
-        VCS_REF: ${VCS_REF:-dev}
-        VERSION: ${VERSION:-dev}
-    container_name: ai-resume-screener-app-dev
+    container_name: ai-resume-screener-dev
     environment:
       - ENVIRONMENT=development
       - DEBUG=true
       - LOG_LEVEL=DEBUG
       - RELOAD=true
-      - WORKERS=1
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:-password}@db:5432/${POSTGRES_DB:-resume_screener_dev}
+      - REDIS_URL=redis://redis:6379/1
     volumes:
       - .:/app
       - /app/__pycache__
       - /app/.pytest_cache
       - /app/node_modules
+      - dev_uploads:/app/uploads
+      - dev_logs:/app/logs
     ports:
-      - "8000:8000"
-      - "5678:5678"  # Debug port
-      - "8080:8080"  # Additional dev port
+      - "${DEV_PORT:-8000}:8000"
+      - "${DEBUG_PORT:-5678}:5678"  # Debug port
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload", "--log-level", "debug"]
     stdin_open: true
     tty: true
 
   # ===== DEVELOPMENT DATABASE =====
   db:
-    container_name: ai-resume-screener-db-dev
-    ports:
-      - "5432:5432"
     environment:
-      POSTGRES_DB: resume_screener_dev
-      POSTGRES_USER: dev_user
-      POSTGRES_PASSWORD: dev_password
+      POSTGRES_DB: ${POSTGRES_DB:-resume_screener_dev}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+    ports:
+      - "${DEV_POSTGRES_PORT:-5433}:5432"
     volumes:
-      - postgres_dev_data:/var/lib/postgresql/data
-      - ./scripts/dev-init-db.sql:/docker-entrypoint-initdb.d/01-dev-init.sql:ro
+      - dev_postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-dev-db.sql:/docker-entrypoint-initdb.d/init-dev-db.sql:ro
 
   # ===== DEVELOPMENT REDIS =====
   redis:
-    container_name: ai-resume-screener-redis-dev
     ports:
-      - "6379:6379"
-    command: redis-server --appendonly no --save ""
+      - "${DEV_REDIS_PORT:-6380}:6379"
+    volumes:
+      - dev_redis_data:/data
 
   # ===== DEVELOPMENT TOOLS =====
   mailhog:
     image: mailhog/mailhog:latest
     container_name: ai-resume-screener-mailhog
     ports:
-      - "1025:1025"  # SMTP
-      - "8025:8025"  # Web UI
+      - "${MAILHOG_WEB_PORT:-8025}:8025"
+      - "${MAILHOG_SMTP_PORT:-1025}:1025"
     networks:
       - app-network
 
-  adminer:
-    image: adminer:latest
-    container_name: ai-resume-screener-adminer
-    ports:
-      - "8081:8080"
-    environment:
-      ADMINER_DEFAULT_SERVER: db
-    depends_on:
-      - db
-    networks:
-      - app-network
-
-  redis-commander:
-    image: rediscommander/redis-commander:latest
-    container_name: ai-resume-screener-redis-commander
-    ports:
-      - "8082:8081"
-    environment:
-      REDIS_HOSTS: local:redis:6379
-    depends_on:
-      - redis
-    networks:
-      - app-network
-
-  # ===== TESTING SERVICES =====
-  test-runner:
-    build:
-      context: .
-      target: development
-    container_name: ai-resume-screener-test
-    environment:
-      - ENVIRONMENT=testing
-      - DATABASE_URL=postgresql://test_user:test_password@test-db:5432/test_resume_screener
-      - REDIS_URL=redis://test-redis:6379/0
-    volumes:
-      - .:/app
-      - /app/__pycache__
-      - /app/.pytest_cache
-    depends_on:
-      - test-db
-      - test-redis
-    command: ["pytest", "tests/", "-v", "--cov=app"]
-    networks:
-      - test-network
-    profiles:
-      - testing
-
+  # ===== TESTING DATABASE =====
   test-db:
     image: postgres:14-alpine
     container_name: ai-resume-screener-test-db
@@ -113,30 +66,20 @@ services:
       POSTGRES_DB: test_resume_screener
       POSTGRES_USER: test_user
       POSTGRES_PASSWORD: test_password
+    ports:
+      - "${TEST_DB_PORT:-5434}:5432"
     tmpfs:
       - /var/lib/postgresql/data
     networks:
-      - test-network
-    profiles:
-      - testing
+      - app-network
 
-  test-redis:
-    image: redis:7-alpine
-    container_name: ai-resume-screener-test-redis
-    command: redis-server --appendonly no --save ""
-    tmpfs:
-      - /data
-    networks:
-      - test-network
-    profiles:
-      - testing
-
-# ===== DEVELOPMENT VOLUMES =====
+  # ===== DEVELOPMENT VOLUMES =====
 volumes:
-  postgres_dev_data:
+  dev_postgres_data:
     driver: local
-
-# ===== ADDITIONAL NETWORKS =====
-networks:
-  test-network:
-    driver: bridge
+  dev_redis_data:
+    driver: local
+  dev_uploads:
+    driver: local
+  dev_logs:
+    driver: local

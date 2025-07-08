@@ -1,21 +1,16 @@
 # =============================================================================
 # AI Resume Screener - Makefile
 # =============================================================================
-# Common commands for development, testing, and deployment
+# Common development and deployment commands
 # =============================================================================
 
-.PHONY: help install dev test lint format clean build up down logs shell backup restore deploy
-
-# Default target
-.DEFAULT_GOAL := help
-
 # Variables
-PYTHON := python3
-PIP := pip3
+PYTHON := python
+PIP := pip
+DOCKER := docker
 DOCKER_COMPOSE := docker-compose
-DOCKER_COMPOSE_DEV := docker-compose -f docker-compose.yml -f docker-compose.dev.yml
 PROJECT_NAME := ai-resume-screener
-VERSION := $(shell grep -E '^version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/')
+VERSION := $(shell cat VERSION 2>/dev/null || echo "1.0.0")
 
 # Colors for output
 RED := \033[0;31m
@@ -24,249 +19,297 @@ YELLOW := \033[1;33m
 BLUE := \033[0;34m
 NC := \033[0m # No Color
 
-# Help target
+# Default target
+.DEFAULT_GOAL := help
+
+# ===== HELP =====
+.PHONY: help
 help: ## Show this help message
 	@echo "$(BLUE)AI Resume Screener - Available Commands$(NC)"
 	@echo "======================================"
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "$(GREEN)%-20s$(NC) %s\n", $$1, $$2}'
+	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "$(GREEN)%-20s$(NC) %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
-# ===== DEVELOPMENT SETUP =====
+# ===== SETUP =====
+.PHONY: setup
+setup: ## Setup development environment
+	@echo "$(BLUE)Setting up development environment...$(NC)"
+	./scripts/setup.sh --dev
+	@echo "$(GREEN)✅ Setup completed!$(NC)"
+
+.PHONY: install
 install: ## Install dependencies
 	@echo "$(BLUE)Installing dependencies...$(NC)"
 	$(PIP) install --upgrade pip
 	$(PIP) install -r requirements.txt
+	@echo "$(GREEN)✅ Dependencies installed!$(NC)"
+
+.PHONY: install-dev
+install-dev: ## Install development dependencies
+	@echo "$(BLUE)Installing development dependencies...$(NC)"
 	$(PIP) install -r requirements/dev.txt
+	@echo "$(GREEN)✅ Development dependencies installed!$(NC)"
 
-install-prod: ## Install production dependencies only
-	@echo "$(BLUE)Installing production dependencies...$(NC)"
-	$(PIP) install --upgrade pip
-	$(PIP) install -r requirements/prod.txt
-
-setup: ## Run initial setup
-	@echo "$(BLUE)Running initial setup...$(NC)"
-	chmod +x scripts/*.sh
-	./scripts/setup.sh
-
-download-models: ## Download spaCy models
-	@echo "$(BLUE)Downloading spaCy models...$(NC)"
+.PHONY: models
+models: ## Download required ML models
+	@echo "$(BLUE)Downloading ML models...$(NC)"
 	$(PYTHON) scripts/download_models.py
+	@echo "$(GREEN)✅ Models downloaded!$(NC)"
 
 # ===== DEVELOPMENT =====
+.PHONY: dev
 dev: ## Start development server
 	@echo "$(BLUE)Starting development server...$(NC)"
 	./scripts/run_dev.sh
 
-dev-docker: ## Start development environment with Docker
-	@echo "$(BLUE)Starting development environment with Docker...$(NC)"
-	$(DOCKER_COMPOSE_DEV) up --build
+.PHONY: dev-docker
+dev-docker: ## Start development server with Docker
+	@echo "$(BLUE)Starting development server with Docker...$(NC)"
+	$(DOCKER_COMPOSE) -f docker-compose.yml -f docker-compose.dev.yml up --build
 
-shell: ## Open shell in running container
-	@echo "$(BLUE)Opening shell in app container...$(NC)"
-	$(DOCKER_COMPOSE) exec app /bin/bash
-
-shell-dev: ## Open shell in development container
-	@echo "$(BLUE)Opening shell in development container...$(NC)"
-	$(DOCKER_COMPOSE_DEV) exec app /bin/bash
+.PHONY: shell
+shell: ## Open Python shell with app context
+	@echo "$(BLUE)Opening Python shell...$(NC)"
+	$(PYTHON) -c "from app.main import app; import IPython; IPython.start_ipython(argv=[], user_ns=locals())"
 
 # ===== TESTING =====
+.PHONY: test
 test: ## Run all tests
 	@echo "$(BLUE)Running tests...$(NC)"
 	pytest tests/ -v --cov=app --cov-report=html --cov-report=term-missing
 
+.PHONY: test-unit
 test-unit: ## Run unit tests only
 	@echo "$(BLUE)Running unit tests...$(NC)"
 	pytest tests/unit/ -v
 
+.PHONY: test-integration
 test-integration: ## Run integration tests only
 	@echo "$(BLUE)Running integration tests...$(NC)"
 	pytest tests/integration/ -v
 
-test-docker: ## Run tests in Docker
-	@echo "$(BLUE)Running tests in Docker...$(NC)"
-	$(DOCKER_COMPOSE) --profile testing run --rm test-runner
-
+.PHONY: test-watch
 test-watch: ## Run tests in watch mode
 	@echo "$(BLUE)Running tests in watch mode...$(NC)"
 	pytest-watch tests/ -- -v
 
+.PHONY: coverage
+coverage: ## Generate coverage report
+	@echo "$(BLUE)Generating coverage report...$(NC)"
+	pytest tests/ --cov=app --cov-report=html --cov-report=term-missing
+	@echo "$(GREEN)✅ Coverage report generated in htmlcov/$(NC)"
+
 # ===== CODE QUALITY =====
-lint: ## Run linting
-	@echo "$(BLUE)Running linting...$(NC)"
+.PHONY: lint
+lint: ## Run linting checks
+	@echo "$(BLUE)Running linting checks...$(NC)"
 	flake8 app/ tests/
 	mypy app/
+	@echo "$(GREEN)✅ Linting completed!$(NC)"
 
+.PHONY: format
 format: ## Format code
 	@echo "$(BLUE)Formatting code...$(NC)"
 	black app/ tests/
 	isort app/ tests/
+	@echo "$(GREEN)✅ Code formatted!$(NC)"
 
+.PHONY: format-check
 format-check: ## Check code formatting
 	@echo "$(BLUE)Checking code formatting...$(NC)"
 	black --check app/ tests/
 	isort --check-only app/ tests/
 
+.PHONY: security
 security: ## Run security checks
 	@echo "$(BLUE)Running security checks...$(NC)"
 	bandit -r app/
 	safety check
+	@echo "$(GREEN)✅ Security checks completed!$(NC)"
 
-pre-commit: ## Run pre-commit hooks
-	@echo "$(BLUE)Running pre-commit hooks...$(NC)"
-	pre-commit run --all-files
+.PHONY: quality
+quality: format-check lint security ## Run all quality checks
 
-# ===== DOCKER OPERATIONS =====
-build: ## Build Docker images
-	@echo "$(BLUE)Building Docker images...$(NC)"
-	$(DOCKER_COMPOSE) build
+# ===== DATABASE =====
+.PHONY: db-upgrade
+db-upgrade: ## Run database migrations
+	@echo "$(BLUE)Running database migrations...$(NC)"
+	alembic upgrade head
+	@echo "$(GREEN)✅ Database upgraded!$(NC)"
 
-build-no-cache: ## Build Docker images without cache
-	@echo "$(BLUE)Building Docker images without cache...$(NC)"
-	$(DOCKER_COMPOSE) build --no-cache
+.PHONY: db-downgrade
+db-downgrade: ## Rollback database migration
+	@echo "$(BLUE)Rolling back database migration...$(NC)"
+	alembic downgrade -1
+	@echo "$(GREEN)✅ Database downgraded!$(NC)"
 
+.PHONY: db-reset
+db-reset: ## Reset database
+	@echo "$(YELLOW)⚠️  Resetting database...$(NC)"
+	$(DOCKER_COMPOSE) down -v
+	$(DOCKER_COMPOSE) up -d db
+	sleep 5
+	alembic upgrade head
+	@echo "$(GREEN)✅ Database reset!$(NC)"
+
+# ===== DOCKER =====
+.PHONY: build
+build: ## Build Docker image
+	@echo "$(BLUE)Building Docker image...$(NC)"
+	$(DOCKER) build -t $(PROJECT_NAME):$(VERSION) .
+	$(DOCKER) tag $(PROJECT_NAME):$(VERSION) $(PROJECT_NAME):latest
+	@echo "$(GREEN)✅ Docker image built!$(NC)"
+
+.PHONY: up
 up: ## Start all services
 	@echo "$(BLUE)Starting all services...$(NC)"
 	$(DOCKER_COMPOSE) up -d
+	@echo "$(GREEN)✅ Services started!$(NC)"
 
-up-build: ## Start all services and build
-	@echo "$(BLUE)Starting all services with build...$(NC)"
-	$(DOCKER_COMPOSE) up -d --build
-
+.PHONY: down
 down: ## Stop all services
 	@echo "$(BLUE)Stopping all services...$(NC)"
 	$(DOCKER_COMPOSE) down
+	@echo "$(GREEN)✅ Services stopped!$(NC)"
 
-down-volumes: ## Stop all services and remove volumes
-	@echo "$(YELLOW)Stopping all services and removing volumes...$(NC)"
-	$(DOCKER_COMPOSE) down -v
-
-restart: ## Restart all services
-	@echo "$(BLUE)Restarting all services...$(NC)"
-	$(DOCKER_COMPOSE) restart
-
-logs: ## Show logs for all services
-	@echo "$(BLUE)Showing logs...$(NC)"
+.PHONY: logs
+logs: ## View logs
+	@echo "$(BLUE)Viewing logs...$(NC)"
 	$(DOCKER_COMPOSE) logs -f
 
-logs-app: ## Show logs for app service only
-	@echo "$(BLUE)Showing app logs...$(NC)"
-	$(DOCKER_COMPOSE) logs -f app
-
-# ===== DATABASE OPERATIONS =====
-db-migrate: ## Run database migrations
-	@echo "$(BLUE)Running database migrations...$(NC)"
-	$(DOCKER_COMPOSE) exec app alembic upgrade head
-
-db-migration: ## Create new database migration
-	@echo "$(BLUE)Creating new migration...$(NC)"
-	@read -p "Migration message: " message; \
-	$(DOCKER_COMPOSE) exec app alembic revision --autogenerate -m "$$message"
-
-db-reset: ## Reset database
-	@echo "$(YELLOW)Resetting database...$(NC)"
-	$(DOCKER_COMPOSE) exec app alembic downgrade base
-	$(DOCKER_COMPOSE) exec app alembic upgrade head
-
-db-shell: ## Open database shell
-	@echo "$(BLUE)Opening database shell...$(NC)"
-	$(DOCKER_COMPOSE) exec db psql -U postgres -d resume_screener
-
-# ===== BACKUP AND RESTORE =====
-backup: ## Create database backup
-	@echo "$(BLUE)Creating database backup...$(NC)"
-	mkdir -p backups
-	$(DOCKER_COMPOSE) exec db pg_dump -U postgres resume_screener > backups/backup_$(shell date +%Y%m%d_%H%M%S).sql
-	@echo "$(GREEN)Backup created in backups/ directory$(NC)"
-
-restore: ## Restore database from backup
-	@echo "$(YELLOW)Restoring database from backup...$(NC)"
-	@read -p "Backup file path: " backup_file; \
-	$(DOCKER_COMPOSE) exec -T db psql -U postgres -d resume_screener < $$backup_file
-
-backup-files: ## Backup uploaded files
-	@echo "$(BLUE)Creating files backup...$(NC)"
-	tar -czf backups/files_backup_$(shell date +%Y%m%d_%H%M%S).tar.gz uploads/ data/ logs/
-
-# ===== MONITORING =====
-stats: ## Show container stats
-	@echo "$(BLUE)Container statistics:$(NC)"
-	docker stats --no-stream
-
-health: ## Check service health
-	@echo "$(BLUE)Checking service health...$(NC)"
-	curl -f http://localhost:8000/health || echo "$(RED)Health check failed$(NC)"
-
-monitoring: ## Open monitoring dashboards
-	@echo "$(BLUE)Opening monitoring dashboards...$(NC)"
-	@echo "Grafana: http://localhost:3000"
-	@echo "Prometheus: http://localhost:9090"
-	@echo "Redis Commander: http://localhost:8082"
-	@echo "Adminer: http://localhost:8081"
+.PHONY: ps
+ps: ## Show running containers
+	@echo "$(BLUE)Running containers:$(NC)"
+	$(DOCKER_COMPOSE) ps
 
 # ===== DEPLOYMENT =====
+.PHONY: deploy-staging
 deploy-staging: ## Deploy to staging
 	@echo "$(BLUE)Deploying to staging...$(NC)"
 	./scripts/deploy.sh staging
+	@echo "$(GREEN)✅ Deployed to staging!$(NC)"
 
+.PHONY: deploy-prod
 deploy-prod: ## Deploy to production
-	@echo "$(YELLOW)Deploying to production...$(NC)"
+	@echo "$(YELLOW)⚠️  Deploying to production...$(NC)"
 	./scripts/deploy.sh production
+	@echo "$(GREEN)✅ Deployed to production!$(NC)"
 
-# ===== CLEANUP =====
-clean: ## Clean up development environment
+# ===== MAINTENANCE =====
+.PHONY: clean
+clean: ## Clean up temporary files
 	@echo "$(BLUE)Cleaning up...$(NC)"
-	$(DOCKER_COMPOSE) down -v --remove-orphans
-	docker system prune -f
-	find . -type d -name "__pycache__" -exec rm -rf {} +
+	find . -type d -name "__pycache__" -delete
 	find . -type f -name "*.pyc" -delete
 	rm -rf .pytest_cache/
 	rm -rf htmlcov/
 	rm -rf .coverage
+	rm -rf dist/
+	rm -rf build/
+	rm -rf *.egg-info/
+	@echo "$(GREEN)✅ Cleanup completed!$(NC)"
 
-clean-all: ## Clean everything including images
-	@echo "$(YELLOW)Cleaning everything...$(NC)"
-	$(DOCKER_COMPOSE) down -v --remove-orphans --rmi all
-	docker system prune -af --volumes
+.PHONY: clean-docker
+clean-docker: ## Clean Docker resources
+	@echo "$(BLUE)Cleaning Docker resources...$(NC)"
+	$(DOCKER) system prune -f
+	$(DOCKER) volume prune -f
+	@echo "$(GREEN)✅ Docker cleanup completed!$(NC)"
 
-# ===== UTILITIES =====
-requirements: ## Update requirements.txt
-	@echo "$(BLUE)Updating requirements.txt...$(NC)"
-	$(PIP) freeze > requirements.txt
+.PHONY: backup
+backup: ## Backup database
+	@echo "$(BLUE)Creating database backup...$(NC)"
+	./scripts/backup.sh
+	@echo "$(GREEN)✅ Backup created!$(NC)"
 
-check: ## Run all checks (lint, format, security, test)
-	@echo "$(BLUE)Running all checks...$(NC)"
-	$(MAKE) format-check
-	$(MAKE) lint
-	$(MAKE) security
-	$(MAKE) test
+.PHONY: restore
+restore: ## Restore database from backup
+	@echo "$(YELLOW)⚠️  Restoring database...$(NC)"
+	./scripts/restore.sh $(BACKUP_FILE)
+	@echo "$(GREEN)✅ Database restored!$(NC)"
 
+# ===== DOCUMENTATION =====
+.PHONY: docs
 docs: ## Generate documentation
 	@echo "$(BLUE)Generating documentation...$(NC)"
 	mkdocs build
+	@echo "$(GREEN)✅ Documentation generated!$(NC)"
 
+.PHONY: docs-serve
 docs-serve: ## Serve documentation locally
 	@echo "$(BLUE)Serving documentation...$(NC)"
 	mkdocs serve
 
-version: ## Show current version
-	@echo "$(BLUE)Current version: $(VERSION)$(NC)"
+# ===== MONITORING =====
+.PHONY: health
+health: ## Check application health
+	@echo "$(BLUE)Checking application health...$(NC)"
+	curl -f http://localhost:8000/health || echo "$(RED)❌ Health check failed$(NC)"
 
-# ===== CI/CD =====
-ci: ## Run CI pipeline locally
-	@echo "$(BLUE)Running CI pipeline...$(NC)"
-	$(MAKE) format-check
-	$(MAKE) lint
-	$(MAKE) security
-	$(MAKE) test
-	$(MAKE) build
+.PHONY: metrics
+metrics: ## View application metrics
+	@echo "$(BLUE)Application metrics:$(NC)"
+	curl -s http://localhost:8000/metrics
 
-# ===== ENVIRONMENT INFO =====
-info: ## Show environment information
-	@echo "$(BLUE)Environment Information:$(NC)"
+# ===== UTILITIES =====
+.PHONY: version
+version: ## Show version information
+	@echo "$(BLUE)Version Information:$(NC)"
 	@echo "Project: $(PROJECT_NAME)"
 	@echo "Version: $(VERSION)"
 	@echo "Python: $(shell $(PYTHON) --version)"
-	@echo "Docker: $(shell docker --version)"
-	@echo "Docker Compose: $(shell $(DOCKER_COMPOSE) --version)"
-	@echo ""
-	@echo "$(BLUE)Running Services:$(NC)"
-	@$(DOCKER_COMPOSE) ps 2>/dev/null || echo "No services running"
+	@echo "Docker: $(shell $(DOCKER) --version)"
+
+.PHONY: env
+env: ## Show environment information
+	@echo "$(BLUE)Environment Information:$(NC)"
+	@echo "ENVIRONMENT: $(shell echo $$ENVIRONMENT)"
+	@echo "DEBUG: $(shell echo $$DEBUG)"
+	@echo "DATABASE_URL: $(shell echo $$DATABASE_URL | sed 's/:[^@]*@/:***@/')"
+
+# ===== QUICK COMMANDS =====
+.PHONY: quick-start
+quick-start: install models dev ## Quick start for development
+
+.PHONY: quick-test
+quick-test: format-check lint test ## Quick test pipeline
+
+.PHONY: quick-deploy
+quick-deploy: quality test build deploy-staging ## Quick deployment pipeline
+
+# ===== ADVANCED =====
+.PHONY: profile
+profile: ## Profile application performance
+	@echo "$(BLUE)Profiling application...$(NC)"
+	$(PYTHON) -m cProfile -o profile.stats -m app.main
+	@echo "$(GREEN)✅ Profile saved to profile.stats$(NC)"
+
+.PHONY: benchmark
+benchmark: ## Run performance benchmarks
+	@echo "$(BLUE)Running benchmarks...$(NC)"
+	pytest tests/performance/ --benchmark-only
+	@echo "$(GREEN)✅ Benchmarks completed!$(NC)"
+
+.PHONY: load-test
+load-test: ## Run load tests
+	@echo "$(BLUE)Running load tests...$(NC)"
+	locust -f tests/performance/locustfile.py --host=http://localhost:8000
+	@echo "$(GREEN)✅ Load tests completed!$(NC)"
+
+# ===== FILE TARGETS =====
+requirements.txt: requirements/base.txt requirements/prod.txt
+	@echo "$(BLUE)Updating requirements.txt...$(NC)"
+	cat requirements/base.txt requirements/prod.txt | sort | uniq > requirements.txt
+
+VERSION:
+	@echo "$(VERSION)" > VERSION
+
+# ===== PHONY TARGETS =====
+.PHONY: all
+all: setup quality test build ## Run complete pipeline
+
+# Check if required tools are installed
+check-tools:
+	@command -v $(PYTHON) >/dev/null 2>&1 || { echo "$(RED)❌ Python is not installed$(NC)"; exit 1; }
+	@command -v $(DOCKER) >/dev/null 2>&1 || { echo "$(RED)❌ Docker is not installed$(NC)"; exit 1; }
+	@command -v $(DOCKER_COMPOSE) >/dev/null 2>&1 || { echo "$(RED)❌ Docker Compose is not installed$(NC)"; exit 1; }
+	@echo "$(GREEN)✅ All required tools are installed$(NC)"

@@ -101,9 +101,7 @@ RUN chmod +x scripts/*.sh
 RUN python -m spacy download en_core_web_sm || true
 
 # Set proper permissions
-RUN chown -R appuser:appuser /app \
-    && chmod -R 755 /app \
-    && chmod -R 777 /app/uploads /app/logs /app/models /app/tmp
+RUN chown -R appuser:appuser /app
 
 # Switch to non-root user
 USER appuser
@@ -117,30 +115,3 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
 
 # Default command
 CMD ["gunicorn", "app.main:app", "-c", "gunicorn.conf.py"]
-
-# =============================================================================
-# Development stage (optional)
-# =============================================================================
-FROM production as development
-
-# Switch back to root for development tools installation
-USER root
-
-# Install development dependencies
-RUN pip install -r requirements/dev.txt
-
-# Install development tools
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    vim \
-    htop \
-    && rm -rf /var/lib/apt/lists/*
-
-# Switch back to app user
-USER appuser
-
-# Override for development
-ENV ENVIRONMENT=development \
-    DEBUG=true
-
-# Development command
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]

@@ -43,10 +43,6 @@ services:
       start_period: 40s
     networks:
       - app-network
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.app.rule=Host(`${DOMAIN:-localhost}`)"
-      - "traefik.http.services.app.loadbalancer.server.port=8000"
 
   # ===== DATABASE SERVICE =====
   db:
@@ -59,7 +55,7 @@ services:
       POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/01-init-db.sql:ro
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
       - ./backups:/backups
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
@@ -72,24 +68,12 @@ services:
       start_period: 30s
     networks:
       - app-network
-    command: >
-      postgres
-      -c shared_preload_libraries=pg_stat_statements
-      -c pg_stat_statements.track=all
-      -c max_connections=200
-      -c shared_buffers=256MB
-      -c effective_cache_size=1GB
 
-  # ===== REDIS CACHE SERVICE =====
+  # ===== REDIS SERVICE =====
   redis:
     image: redis:7-alpine
     container_name: ai-resume-screener-redis
-    command: >
-      redis-server
-      --appendonly yes
-      --appendfsync everysec
-      --maxmemory 256mb
-      --maxmemory-policy allkeys-lru
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
     volumes:
       - redis_data:/data
       - ./redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
@@ -101,38 +85,38 @@ services:
       interval: 10s
       timeout: 3s
       retries: 3
+      start_period: 10s
     networks:
       - app-network
 
-  # ===== REVERSE PROXY =====
+  # ===== NGINX REVERSE PROXY =====
   nginx:
     image: nginx:alpine
     container_name: ai-resume-screener-nginx
     ports:
-      - "80:80"
-      - "443:443"
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
       - ./nginx/ssl:/etc/nginx/ssl:ro
       - ./logs/nginx:/var/log/nginx
       - ./static:/var/www/static:ro
     depends_on:
       - app
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     networks:
       - app-network
-    labels:
-      - "traefik.enable=false"
 
-  # ===== MONITORING =====
+  # ===== MONITORING SERVICES =====
   prometheus:
     image: prom/prometheus:latest
     container_name: ai-resume-screener-prometheus
-    ports:
-      - "9090:9090"
-    volumes:
-      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - prometheus_data:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
@@ -140,6 +124,11 @@ services:
       - '--web.console.templates=/etc/prometheus/consoles'
       - '--storage.tsdb.retention.time=200h'
       - '--web.enable-lifecycle'
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
     restart: unless-stopped
     networks:
       - app-network
@@ -147,15 +136,16 @@ services:
   grafana:
     image: grafana/grafana:latest
     container_name: ai-resume-screener-grafana
-    ports:
-      - "3000:3000"
     environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_USER:-admin}
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
       - GF_USERS_ALLOW_SIGN_UP=false
     volumes:
       - grafana_data:/var/lib/grafana
-      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
-      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports:
+      - "${GRAFANA_PORT:-3000}:3000"
     depends_on:
       - prometheus
     restart: unless-stopped
