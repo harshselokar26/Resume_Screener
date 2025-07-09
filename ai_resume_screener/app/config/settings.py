@@ -193,22 +193,71 @@ class Settings(BaseSettings):
     def parse_allowed_hosts(cls, v):
         """Parse allowed hosts from string or list"""
         if isinstance(v, str):
-            return [host.strip() for host in v.split(",")]
-        return v
+            # Handle comma-separated string
+            return [host.strip() for host in v.split(",") if host.strip()]
+        elif isinstance(v, list):
+            # Handle list input
+            return [host.strip() for host in v if host.strip()]
+        return v if v else ["*"]
     
     @validator("ALLOWED_ORIGINS", pre=True)
     def parse_allowed_origins(cls, v):
         """Parse allowed origins from string or list"""
         if isinstance(v, str):
-            return [origin.strip() for origin in v.split(",")]
-        return v
+            # Handle comma-separated string
+            return [origin.strip() for origin in v.split(",") if origin.strip()]
+        elif isinstance(v, list):
+            # Handle list input
+            return [origin.strip() for origin in v if origin.strip()]
+        return v if v else ["*"]
     
     @validator("ALLOWED_FILE_TYPES", pre=True)
     def parse_allowed_file_types(cls, v):
         """Parse allowed file types from string or list"""
         if isinstance(v, str):
-            return [ext.strip().lower() for ext in v.split(",")]
-        return [ext.lower() for ext in v]
+            # Handle comma-separated string
+            return [ext.strip().lower() for ext in v.split(",") if ext.strip()]
+        elif isinstance(v, list):
+            # Handle list input
+            return [ext.strip().lower() for ext in v if ext.strip()]
+        return v if v else ["pdf", "doc", "docx"]
+    
+    @validator("SECRET_KEY")
+    def validate_secret_key(cls, v):
+        """Validate secret key length and security"""
+        if len(v) < 32:
+            raise ValueError("SECRET_KEY must be at least 32 characters long")
+        return v
+    
+    @validator("MAX_FILE_SIZE")
+    def validate_max_file_size(cls, v):
+        """Validate maximum file size"""
+        if v <= 0:
+            raise ValueError("MAX_FILE_SIZE must be greater than 0")
+        if v > 100 * 1024 * 1024:  # 100MB
+            raise ValueError("MAX_FILE_SIZE cannot exceed 100MB")
+        return v
+    
+    @validator("PORT")
+    def validate_port(cls, v):
+        """Validate port number"""
+        if not 1 <= v <= 65535:
+            raise ValueError("PORT must be between 1 and 65535")
+        return v
+    
+    @validator("WORKERS")
+    def validate_workers(cls, v):
+        """Validate number of workers"""
+        if v < 1:
+            raise ValueError("WORKERS must be at least 1")
+        return v
+    
+    @validator("MIN_SIMILARITY_SCORE", "MAX_SIMILARITY_SCORE")
+    def validate_similarity_scores(cls, v):
+        """Validate similarity score ranges"""
+        if not 0.0 <= v <= 1.0:
+            raise ValueError("Similarity scores must be between 0.0 and 1.0")
+        return v
     
     @property
     def is_development(self) -> bool:
