@@ -1,97 +1,117 @@
 """
-Utils Package for AI Resume Screener
+Utilities Package for AI Resume Screener
 
-This package contains utility functions, validators, and custom exceptions
-used throughout the application for common operations and error handling.
+This package contains utility functions and classes used throughout the application.
 """
 
-from app.utils.helpers import (
-    generate_unique_filename,
-    cleanup_temp_files,
-    format_file_size,
-    calculate_similarity_percentage,
-    extract_email_from_text,
-    extract_phone_from_text,
-    sanitize_filename,
-    get_file_extension,
-    is_valid_uuid,
-    truncate_text,
-    normalize_skill_name,
-    calculate_reading_time,
-    get_current_timestamp,
-    hash_text,
-    mask_sensitive_data
-)
-
-from app.utils.validators import (
-    validate_file_type,
-    validate_file_size,
-    validate_email,
-    validate_phone,
-    validate_url,
-    validate_text_length,
-    validate_similarity_score,
-    validate_percentage,
-    validate_uuid,
-    validate_json_structure,
-    validate_skill_name,
-    validate_date_format
-)
-
 from app.utils.exceptions import (
+    # Base exception
     ResumeScreenerException,
-    FileProcessingError,
-    NLPProcessingError,
-    ScoringError,
+    
+    # Validation exceptions
     ValidationError,
+    InvalidInputError,
+    MissingRequiredFieldError,
+    InvalidRangeError,
+    
+    # File processing exceptions
+    FileProcessingError,
+    FileValidationError,
+    FileNotFoundError,
+    FileSizeExceededError,
+    UnsupportedFileTypeError,
+    FileCorruptedError,
+    
+    # NLP processing exceptions
+    NLPProcessingError,
+    ModelNotLoadedError,
+    TextProcessingError,
+    SkillExtractionError,
+    
+    # Scoring exceptions
+    ScoringError,
+    SimilarityCalculationError,
+    InsufficientDataError,
+    
+    # Authentication exceptions
     AuthenticationError,
     AuthorizationError,
+    TokenExpiredError,
+    InvalidTokenError,
+    
+    # Database exceptions
     DatabaseError,
+    DatabaseConnectionError,
+    RecordNotFoundError,
+    DuplicateRecordError,
+    
+    # External service exceptions
     ExternalServiceError,
-    ConfigurationError
+    ServiceUnavailableError,
+    APIRateLimitError,
+    
+    # Configuration exceptions
+    ConfigurationError,
+    MissingConfigurationError,
+    InvalidConfigurationError,
+    
+    # Utility functions
+    handle_exception,
+    create_error_response,
 )
 
 __all__ = [
-    # Helper functions
-    "generate_unique_filename",
-    "cleanup_temp_files",
-    "format_file_size",
-    "calculate_similarity_percentage",
-    "extract_email_from_text",
-    "extract_phone_from_text",
-    "sanitize_filename",
-    "get_file_extension",
-    "is_valid_uuid",
-    "truncate_text",
-    "normalize_skill_name",
-    "calculate_reading_time",
-    "get_current_timestamp",
-    "hash_text",
-    "mask_sensitive_data",
-    
-    # Validators
-    "validate_file_type",
-    "validate_file_size",
-    "validate_email",
-    "validate_phone",
-    "validate_url",
-    "validate_text_length",
-    "validate_similarity_score",
-    "validate_percentage",
-    "validate_uuid",
-    "validate_json_structure",
-    "validate_skill_name",
-    "validate_date_format",
-    
-    # Exceptions
+    # Base exception
     "ResumeScreenerException",
-    "FileProcessingError",
-    "NLPProcessingError",
-    "ScoringError",
+    
+    # Validation exceptions
     "ValidationError",
+    "InvalidInputError",
+    "MissingRequiredFieldError",
+    "InvalidRangeError",
+    
+    # File processing exceptions
+    "FileProcessingError",
+    "FileValidationError",
+    "FileNotFoundError",
+    "FileSizeExceededError",
+    "UnsupportedFileTypeError",
+    "FileCorruptedError",
+    
+    # NLP processing exceptions
+    "NLPProcessingError",
+    "ModelNotLoadedError",
+    "TextProcessingError",
+    "SkillExtractionError",
+    
+    # Scoring exceptions
+    "ScoringError",
+    "SimilarityCalculationError",
+    "InsufficientDataError",
+    
+    # Authentication exceptions
     "AuthenticationError",
     "AuthorizationError",
+    "TokenExpiredError",
+    "InvalidTokenError",
+    
+    # Database exceptions
     "DatabaseError",
+    "DatabaseConnectionError",
+    "RecordNotFoundError",
+    "DuplicateRecordError",
+    
+    # External service exceptions
     "ExternalServiceError",
-    "ConfigurationError"
+    "ServiceUnavailableError",
+    "APIRateLimitError",
+    
+    # Configuration exceptions
+    "ConfigurationError",
+    "MissingConfigurationError",
+    "InvalidConfigurationError",
+    
+    # Utility functions
+    "handle_exception",
+    "create_error_response",
 ]
