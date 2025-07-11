@@ -25,26 +25,28 @@ from app.models.schemas import (
     HealthResponse
 )
 from app.services.pdf_parser import PDFParser
-from app.services.nlp_processor import NLPProcessor
+from app.services.nlp_processor import EnhancedNLPProcessor
 from app.services.scorer import ResumeScorer
 from app.services.file_handler import FileHandler
 from app.api.dependencies import validate_file_upload, get_file_handler
 from app.utils.exceptions import (
     FileProcessingError,
+    FileValidationError,
     NLPProcessingError,
-    ScoringError
+    ScoringError,
+    ValidationError
 )
 from app.utils.helpers import generate_unique_filename, cleanup_temp_files
 
 # Setup logging
 logger = logging.getLogger(__name__)
 
-# Create router instance
-router = APIRouter()
+# Create router instance WITHOUT API prefix (fixed duplication)
+router = APIRouter(tags=["resume-screener"])
 
 # Initialize services
 pdf_parser = PDFParser()
-nlp_processor = NLPProcessor()
+nlp_processor = EnhancedNLPProcessor()
 resume_scorer = ResumeScorer()
 
 
@@ -56,15 +58,13 @@ resume_scorer = ResumeScorer()
     description="Upload a resume file (PDF, DOC, DOCX) and extract text content"
 )
 async def upload_resume(
-    file: UploadFile = File(..., description="Resume file to upload"),
-    file_handler: FileHandler = Depends(get_file_handler)
+    file: UploadFile = File(..., description="Resume file to upload (PDF, DOC, DOCX)")
 ) -> ResumeUploadResponse:
     """
     Upload and process a resume file.
     
     Args:
-        file: Uploaded resume file
-        file_handler: File handling service dependency
+        file: Uploaded resume file (PDF, DOC, or DOCX format)
         
     Returns:
         ResumeUploadResponse: Upload result with extracted text and metadata
@@ -72,23 +72,60 @@ async def upload_resume(
     Raises:
         HTTPException: If file processing fails
     """
+    file_path = None
     try:
-        # Validate file
-        await validate_file_upload(file)
+        # Validate file upload
+        if not file.filename:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No file provided"
+            )
         
-        # Generate unique filename
-        unique_filename = generate_unique_filename(file.filename)
-        file_path = settings.get_upload_path(unique_filename)
+        # Check file type
+        allowed_extensions = settings.ALLOWED_FILE_TYPES
+        file_extension = file.filename.split('.')[-1].lower()
         
-        # Save uploaded file
-        await file_handler.save_file(file, file_path)
+        if file_extension not in allowed_extensions:
+            raise HTTPException(
+                status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+                detail=f"Unsupported file type: {file_extension}. Supported types: {', '.join(allowed_extensions)}"
+            )
+        
+        # Check file size
+        content = await file.read()
+        if len(content) > settings.MAX_FILE_SIZE:
+            raise HTTPException(
+                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                detail=f"File size ({len(content)} bytes) exceeds maximum allowed size ({settings.MAX_FILE_SIZE} bytes)"
+            )
+        
+        # Reset file pointer
+        await file.seek(0)
+        
+        # Generate unique filename and save file
+        unique_filename = f"{uuid.uuid4()}_{file.filename}"
+        file_path = os.path.join(settings.UPLOAD_DIR, unique_filename)
+        
+        # Ensure upload directory exists
+        os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
+        
+        # Save file
+        with open(file_path, "wb") as buffer:
+            content = await file.read()
+            buffer.write(content)
         
         # Extract text from file
-        if file.filename.lower().endswith('.pdf'):
+        extracted_text = ""
+        if file_extension == 'pdf':
             extracted_text = await pdf_parser.extract_text_from_pdf(file_path)
-        else:
-            # Handle DOC/DOCX files
+        elif file_extension in ['doc', 'docx']:
             extracted_text = await pdf_parser.extract_text_from_doc(file_path)
+        
+        if not extracted_text.strip():
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="No text could be extracted from the file"
+            )
         
         # Get file metadata
         file_stats = os.stat(file_path)
@@ -102,6 +139,7 @@ async def upload_resume(
             file_id=str(uuid.uuid4()),
             original_filename=file.filename,
             file_size=file_stats.st_size,
+            file_size_mb=round(file_stats.st_size / (1024 * 1024), 2),
             upload_timestamp=datetime.utcnow(),
             extracted_text=extracted_text,
             text_length=len(extracted_text),
@@ -110,6 +148,8 @@ async def upload_resume(
             message="Resume uploaded and processed successfully"
         )
         
+    except HTTPException:
+        raise
     except FileProcessingError as e:
         logger.error(f"File processing error: {str(e)}")
         raise HTTPException(
@@ -124,8 +164,11 @@ async def upload_resume(
         )
     finally:
         # Cleanup temporary files
-        if 'file_path' in locals():
-            cleanup_temp_files([file_path])
+        if file_path and os.path.exists(file_path):
+            try:
+                os.remove(file_path)
+            except Exception as e:
+                logger.warning(f"Failed to cleanup file {file_path}: {str(e)}")
 
 
 @router.post(
@@ -149,6 +192,13 @@ async def extract_skills(
         SkillsExtractionResponse: Extracted skills and information
     """
     try:
+        # Validate input
+        if not resume_text or not resume_text.strip():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Resume text cannot be empty"
+            )
+        
         # Extract skills using NLP processor
         skills_data = await nlp_processor.extract_skills(resume_text)
         
@@ -163,7 +213,7 @@ async def extract_skills(
         
         # If job description provided, find relevant skills
         relevant_skills = []
-        if job_description:
+        if job_description and job_description.strip():
             relevant_skills = await nlp_processor.find_relevant_skills(
                 resume_text, job_description
             )
@@ -173,6 +223,7 @@ async def extract_skills(
         return SkillsExtractionResponse(
             technical_skills=skills_data.get("technical_skills", []),
             soft_skills=skills_data.get("soft_skills", []),
+            certifications=skills_data.get("certifications", []),
             experience_years=experience_data.get("total_years", 0),
             experience_details=experience_data.get("details", []),
             education=education_data,
@@ -182,6 +233,8 @@ async def extract_skills(
             status="success"
         )
         
+    except HTTPException:
+        raise
     except NLPProcessingError as e:
         logger.error(f"NLP processing error: {str(e)}")
         raise HTTPException(
@@ -216,13 +269,13 @@ async def score_resume(
     """
     try:
         # Validate input
-        if not request.resume_text.strip():
+        if not request.resume_text or not request.resume_text.strip():
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Resume text cannot be empty"
             )
         
-        if not request.job_description.strip():
+        if not request.job_description or not request.job_description.strip():
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Job description cannot be empty"
@@ -246,19 +299,31 @@ async def score_resume(
             request.job_description
         )
         
-        # Get detailed analysis
-        analysis = await resume_scorer.get_detailed_analysis(
-            request.resume_text,
-            request.job_description,
-            similarity_score
-        )
+        # Initialize analysis and recommendation as None
+        analysis = None
+        recommendation = None
         
-        # Determine recommendation
-        recommendation = await resume_scorer.get_recommendation(
-            similarity_score,
-            matching_skills,
-            missing_skills
-        )
+        # Get detailed analysis if requested
+        if request.include_detailed_analysis:
+            try:
+                analysis = await resume_scorer.get_detailed_analysis(
+                    request.resume_text,
+                    request.job_description,
+                    similarity_score
+                )
+            except Exception as e:
+                logger.warning(f"Failed to generate detailed analysis: {str(e)}")
+        
+        # Determine recommendation if requested
+        if request.include_recommendations:
+            try:
+                recommendation = await resume_scorer.get_recommendation(
+                    similarity_score,
+                    matching_skills,
+                    missing_skills
+                )
+            except Exception as e:
+                logger.warning(f"Failed to generate recommendation: {str(e)}")
         
         logger.info(f"Successfully scored resume with similarity: {similarity_score:.3f}")
         
@@ -275,6 +340,8 @@ async def score_resume(
             status="success"
         )
         
+    except HTTPException:
+        raise
     except ScoringError as e:
         logger.error(f"Scoring error: {str(e)}")
         raise HTTPException(
@@ -307,6 +374,13 @@ async def analyze_job_description(
         Dict containing analyzed job description data
     """
     try:
+        # Validate input
+        if not request.job_description or not request.job_description.strip():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Job description cannot be empty"
+            )
+        
         # Extract required skills
         required_skills = await nlp_processor.extract_required_skills(
             request.job_description
@@ -330,19 +404,147 @@ async def analyze_job_description(
         logger.info("Successfully analyzed job description")
         
         return {
+            "status": "success",
             "required_skills": required_skills,
             "requirements": requirements,
             "job_level": job_level,
             "keywords": keywords,
-            "analysis_timestamp": datetime.utcnow().isoformat(),
-            "status": "success"
+            "job_title": getattr(request, 'job_title', None),
+            "company_name": getattr(request, 'company_name', None),
+            "analysis_timestamp": datetime.utcnow().isoformat()
         }
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error analyzing job description: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal server error during job description analysis"
+        )
+
+
+@router.post(
+    "/batch-score",
+    summary="Batch Resume Scoring",
+    description="Score multiple resumes against a single job description"
+)
+async def batch_score_resumes(
+    resume_texts: List[str] = Form(..., description="List of resume texts to score"),
+    job_description: str = Form(..., description="Job description to score against")
+) -> Dict[str, Any]:
+    """
+    Score multiple resumes against a single job description.
+    
+    Args:
+        resume_texts: List of resume text contents
+        job_description: Job description to score against
+        
+    Returns:
+        Dict containing batch scoring results
+    """
+    try:
+        # Validate input
+        if not job_description or not job_description.strip():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Job description cannot be empty"
+            )
+        
+        if not resume_texts or len(resume_texts) == 0:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="At least one resume text is required"
+            )
+        
+        results = []
+        successful_scores = 0
+        failed_scores = 0
+        total_similarity = 0.0
+        
+        for index, resume_text in enumerate(resume_texts):
+            try:
+                if not resume_text or not resume_text.strip():
+                    results.append({
+                        "resume_index": index,
+                        "error": "Empty resume text",
+                        "similarity_score": 0.0,
+                        "score_percentage": 0.0
+                    })
+                    failed_scores += 1
+                    continue
+                
+                # Calculate similarity score
+                similarity_score = await resume_scorer.calculate_similarity(
+                    resume_text, job_description
+                )
+                
+                # Get basic matching skills
+                matching_skills = await resume_scorer.find_matching_skills(
+                    resume_text, job_description
+                )
+                
+                # Determine basic recommendation
+                if similarity_score >= 0.8:
+                    recommendation = "Highly Recommended"
+                elif similarity_score >= 0.6:
+                    recommendation = "Recommended"
+                elif similarity_score >= 0.4:
+                    recommendation = "Consider"
+                else:
+                    recommendation = "Not Recommended"
+                
+                results.append({
+                    "resume_index": index,
+                    "similarity_score": similarity_score,
+                    "score_percentage": round(similarity_score * 100, 2),
+                    "matching_skills": matching_skills,
+                    "recommendation": recommendation
+                })
+                
+                successful_scores += 1
+                total_similarity += similarity_score
+                
+            except Exception as e:
+                logger.error(f"Error scoring resume {index}: {str(e)}")
+                results.append({
+                    "resume_index": index,
+                    "error": f"Scoring failed: {str(e)}",
+                    "similarity_score": 0.0,
+                    "score_percentage": 0.0
+                })
+                failed_scores += 1
+        
+        # Calculate average similarity
+        average_similarity = total_similarity / successful_scores if successful_scores > 0 else 0.0
+        
+        # Find top candidates
+        top_candidates = sorted(
+            [r for r in results if "error" not in r],
+            key=lambda x: x["similarity_score"],
+            reverse=True
+        )[:3]
+        
+        logger.info(f"Batch scoring completed: {successful_scores} successful, {failed_scores} failed")
+        
+        return {
+            "status": "success",
+            "results": results,
+            "total_resumes": len(resume_texts),
+            "successful_scores": successful_scores,
+            "failed_scores": failed_scores,
+            "average_similarity": round(average_similarity, 3),
+            "top_candidates": top_candidates,
+            "scoring_timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error in batch scoring: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error during batch scoring"
         )
 
 
@@ -368,7 +570,12 @@ async def health_check() -> HealthResponse:
         }
         
         # Check file system
-        upload_dir_writable = os.access(settings.UPLOAD_DIR, os.W_OK)
+        upload_dir_writable = True
+        try:
+            os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
+            upload_dir_writable = os.access(settings.UPLOAD_DIR, os.W_OK)
+        except Exception:
+            upload_dir_writable = False
         
         # Overall health
         all_healthy = all(services_status.values()) and upload_dir_writable
@@ -412,7 +619,8 @@ async def cleanup_files() -> Dict[str, Any]:
             return {
                 "status": "success",
                 "message": "No files to cleanup",
-                "files_removed": 0
+                "files_removed": 0,
+                "cleanup_timestamp": datetime.utcnow().isoformat()
             }
         
         # Remove old files (older than 1 hour)
@@ -422,10 +630,13 @@ async def cleanup_files() -> Dict[str, Any]:
         for filename in os.listdir(upload_dir):
             file_path = os.path.join(upload_dir, filename)
             if os.path.isfile(file_path):
-                file_age = current_time - os.path.getctime(file_path)
-                if file_age > 3600:  # 1 hour
-                    os.remove(file_path)
-                    removed_count += 1
+                try:
+                    file_age = current_time - os.path.getctime(file_path)
+                    if file_age > 3600:  # 1 hour
+                        os.remove(file_path)
+                        removed_count += 1
+                except Exception as e:
+                    logger.warning(f"Failed to remove file {file_path}: {str(e)}")
         
         logger.info(f"Cleanup completed: {removed_count} files removed")
         
@@ -442,3 +653,26 @@ async def cleanup_files() -> Dict[str, Any]:
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Cleanup failed: {str(e)}"
         )
+
+
+# Additional utility endpoint for testing
+@router.get(
+    "/version",
+    summary="Get API Version",
+    description="Get current API version and build information"
+)
+async def get_version() -> Dict[str, Any]:
+    """
+    Get API version and build information.
+    
+    Returns:
+        Dict containing version information
+    """
+    return {
+        "version": settings.VERSION,
+        "environment": settings.ENVIRONMENT,
+        "debug": settings.DEBUG,
+        "timestamp": datetime.utcnow().isoformat(),
+        "supported_file_types": settings.ALLOWED_FILE_TYPES,
+        "max_file_size_mb": round(settings.MAX_FILE_SIZE / (1024 * 1024), 2)
+    }
